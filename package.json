@@ -1,0 +1,9 @@
+{
+  "name": "uor-housing",
+  "version": "1.0.0",
+  "description": "Housing availability for UO:Renaissance",
+  "main": "index.js",
+  "repository": "https://github.com/snydercreative/uor-housing.git",
+  "author": "snydercreative <me@michaelsnyder.me>",
+  "license": "MIT"
+}
