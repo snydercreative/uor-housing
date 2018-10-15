@@ -5,5 +5,17 @@
   "main": "index.js",
   "repository": "https://github.com/snydercreative/uor-housing.git",
   "author": "snydercreative <me@michaelsnyder.me>",
-  "license": "MIT"
+  "license": "MIT",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.334.0",
+    "diff": "^3.5.0"
+  },
+  "devDependencies": {
+    "eslint": "^5.7.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.14.0"
+  }
 }
