@@ -1,5 +1,6 @@
-import aws from 'aws-sdk'
-import diff from 'diff'
+const aws = require('aws-sdk')
+const diff = require('diff')
+const fetch = require('node-fetch')
 
 let differences = ''
 let lastUploadContent = ''
@@ -12,7 +13,7 @@ const handleBucketObject = (err, freshData) => {
 	differences = diff.diffTrimmedLines(lastUploadContent, freshData, options)
 }
 
-exports.handler = async (event, context) => {
+exports.handler = async (event) => {
 	const s3options = {
 		accessKeyId: process.env.AWS_KEY,
 		secretAccessKey: process.env.AWS_SECRET,
