@@ -1,39 +1,72 @@
 const AWS = require('aws-sdk')
+const diff = require('diff')
 const fetch = require('node-fetch')
 const _ = require('lodash')
 
-let differences = ''
-let freshData = ''
+const reformatForUOAM = (dataString) => {
+	let diff = '3\n'
 
-const handleBucketObject = (err, lastUpload, callback) => {
-	const freshHouses = freshData.split(/\r\n/).sort()
-	const lastUploadHouses = lastUpload.Body.toString().split(/\r\n/).sort()
+	const dataArr = JSON.parse(dataString)
 
-	differences = _.difference(lastUploadHouses, freshHouses)
+	dataArr.forEach(item => {
+		diff = diff + item + '\n'
+	})
 
-	callback(null, differences)
+	return diff
 }
 
-exports.handler = (event, context, callback) => {
+exports.handler = async (event) => {
+	
 	const s3options = {
 		accessKeyId: process.env.AWS_KEY,
 		secretAccessKey: process.env.AWS_SECRET,
 		apiVersion: '2006-03-01',
-		region: 'us-west-2',
+		region: 'us-west-2'
 	}
 
 	const s3 = new AWS.S3(s3options)
 
 	const params = {
 		Bucket: 'uor-housing',
+		Key: 'house.txt'
+	}
+	
+	const freshDataResponse = await fetch('http://www.uorenaissance.com/map/house.txt')
+	const freshDataText = await freshDataResponse.text()
+	const freshHouses = freshDataText.split(/\r\n/).sort()
+	
+	const yesterdaysFile = await s3.getObject(params).promise()
+	const yesterdaysHouses = yesterdaysFile.Body.toString().split(/\r\n/).sort()
+	
+	const todaySet = new Set(freshHouses)
+	
+	const differences = yesterdaysHouses.filter(house => !todaySet.has(house))
+	
+	const differencesString = JSON.stringify(differences)
+	
+	const todayPutParams = {
+		Bucket: 'uor-housing',
 		Key: 'house.txt',
+		Body: freshDataText
 	}
 
-	fetch('http://www.uorenaissance.com/map/house.txt')
-		.then(freshDataResponse => freshDataResponse.text())
-		.then((freshDataBody) => {
-			freshData = freshDataBody
+	const differencePutParams = {
+		Bucket: 'uor-housing',
+		Key: 'diff.json',
+		Body: differencesString
+	}
+	
+	const rawPutParams = {
+		Bucket: 'uor-housing',
+		Key: 'diff-uoam.map',
+		Body: reformatForUOAM(differencesString)
+	}
+	
+	await s3.putObject(todayPutParams).promise()
 
-			s3.getObject(params, (err, body) => handleBucketObject(err, body, callback))
-		})
+	await s3.putObject(differencePutParams).promise()
+
+	await s3.putObject(rawPutParams).promise()
+
+	return differencesString
 }
