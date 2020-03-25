@@ -34,15 +34,17 @@ exports.handler = async (event) => {
 	const freshDataResponse = await fetch('http://www.uorenaissance.com/map/house.txt')
 	const freshDataText = await freshDataResponse.text()
 	const freshHouses = freshDataText.split(/\r\n/).sort()
+	const todaySet = new Set(freshHouses)
 	
 	const yesterdaysFile = await s3.getObject(params).promise()
 	const yesterdaysHouses = yesterdaysFile.Body.toString().split(/\r\n/).sort()
-	
-	const todaySet = new Set(freshHouses)
-	
-	const differences = yesterdaysHouses.filter(house => !todaySet.has(house))
-	
-	const differencesString = JSON.stringify(differences)
+	const yesterdaySet = new Set(yesterdaysHouses)
+
+	const drops = yesterdaysHouses.filter(house => !todaySet.has(house))
+	const newHouses = freshHouses.filter(house => !yesterdaySet.has(house))
+
+	const dropsString = JSON.stringify(drops)
+	const newHousesString = JSON.stringify(newHouses)
 	
 	const todayPutParams = {
 		Bucket: 'uor-housing',
@@ -50,23 +52,39 @@ exports.handler = async (event) => {
 		Body: freshDataText
 	}
 
-	const differencePutParams = {
+	const dropsPutParams = {
 		Bucket: 'uor-housing',
-		Key: 'diff.json',
-		Body: differencesString
+		Key: 'drops.json',
+		Body: dropsString
 	}
 	
-	const rawPutParams = {
+	const newHousesPutParams = {
 		Bucket: 'uor-housing',
-		Key: 'diff-uoam.map',
-		Body: reformatForUOAM(differencesString)
+		Key: 'new-houses.json',
+		Body: newHousesString
 	}
 	
+	const uoamDropsPutParams = {
+		Bucket: 'uor-housing',
+		Key: 'uoam-drops.map',
+		Body: reformatForUOAM(dropsString)
+	}
+
+	const uoamNewHousesPutParams = {
+		Bucket: 'uor-housing',
+		Key: 'uoam-new-houses.map',
+		Body: reformatForUOAM(newHousesString)
+	}
+
 	await s3.putObject(todayPutParams).promise()
 
-	await s3.putObject(differencePutParams).promise()
+	await s3.putObject(dropsPutParams).promise()
+	
+	await s3.putObject(newHousesPutParams).promise()
 
-	await s3.putObject(rawPutParams).promise()
+	await s3.putObject(uoamDropsPutParams).promise()
 
-	return differencesString
+	await s3.putObject(uoamNewHousesPutParams).promise()
+
+	return dropsString
 }
