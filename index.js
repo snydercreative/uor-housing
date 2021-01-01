@@ -88,12 +88,12 @@ exports.handler = async (event) => {
 
 		await s3.putObject(uoamNewHousesPutParams).promise()
 	
-		var params = {
+		var snsParams = {
 			Message: 'UOR housing list updated', /* required */
 			TopicArn: process.env.SNS_TOPIC_ARN
 		};
 
-		await new AWS.SNS({apiVersion: '2010-03-31'}).publish(params).promise();
+		await new AWS.SNS({apiVersion: '2010-03-31'}).publish(snsParams).promise();
 	}
 
 	return dropsString
