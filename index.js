@@ -1,5 +1,4 @@
 const AWS = require('aws-sdk')
-const diff = require('diff')
 const fetch = require('node-fetch')
 const _ = require('lodash')
 
@@ -17,6 +16,8 @@ const reformatForUOAM = (dataString) => {
 
 exports.handler = async (event) => {
 	
+	AWS.config.update({region: 'us-west-2'})
+
 	const s3options = {
 		accessKeyId: process.env.AWS_KEY,
 		secretAccessKey: process.env.AWS_SECRET,
@@ -86,6 +87,13 @@ exports.handler = async (event) => {
 		await s3.putObject(uoamDropsPutParams).promise()
 
 		await s3.putObject(uoamNewHousesPutParams).promise()
+	
+		var params = {
+			Message: 'UOR housing list updated', /* required */
+			TopicArn: process.env.SNS_TOPIC_ARN
+		};
+
+		await new AWS.SNS({apiVersion: '2010-03-31'}).publish(params).promise();
 	}
 
 	return dropsString
