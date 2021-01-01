@@ -76,15 +76,17 @@ exports.handler = async (event) => {
 		Body: reformatForUOAM(newHousesString)
 	}
 
-	await s3.putObject(todayPutParams).promise()
+	if (drops.length) {
+		await s3.putObject(todayPutParams).promise()
 
-	await s3.putObject(dropsPutParams).promise()
-	
-	await s3.putObject(newHousesPutParams).promise()
+		await s3.putObject(dropsPutParams).promise()
+		
+		await s3.putObject(newHousesPutParams).promise()
 
-	await s3.putObject(uoamDropsPutParams).promise()
+		await s3.putObject(uoamDropsPutParams).promise()
 
-	await s3.putObject(uoamNewHousesPutParams).promise()
+		await s3.putObject(uoamNewHousesPutParams).promise()
+	}
 
 	return dropsString
 }
