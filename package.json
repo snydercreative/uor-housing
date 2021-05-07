@@ -12,7 +12,7 @@
   "dependencies": {
     "aws-sdk": "^2.334.0",
     "diff": "^3.5.0",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.21",
     "node-fetch": "^2.2.0"
   },
   "devDependencies": {
