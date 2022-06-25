@@ -13,7 +13,7 @@
     "aws-sdk": "^2.334.0",
     "diff": "^3.5.0",
     "lodash": "^4.17.11",
-    "node-fetch": "^2.2.0"
+    "node-fetch": "^2.6.7"
   },
   "devDependencies": {
     "eslint": "^5.7.0",
